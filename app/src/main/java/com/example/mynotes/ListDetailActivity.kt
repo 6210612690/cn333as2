@@ -55,11 +55,8 @@ class ListDetailActivity : AppCompatActivity() {
     override fun onBackPressed() {
 
         plainText = findViewById(R.id.plainText)
-
         val insertedText = plainText.text.toString()
-
         sharedPreferences = getSharedPreferences("", Context.MODE_PRIVATE)
-
         sharedPreferences.edit().putString(viewModel.list.name,insertedText).apply()
 
 

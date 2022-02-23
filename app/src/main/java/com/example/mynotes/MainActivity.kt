@@ -1,7 +1,9 @@
 package com.example.mynotes
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
@@ -18,9 +20,13 @@ import com.example.mynotes.ui.main.MainFragment
 import com.example.mynotes.ui.main.MainViewModel
 import com.example.mynotes.ui.main.MainViewModelFactory
 
+
+
 class MainActivity : AppCompatActivity(), MainFragment.MainFragmentInteractionListener {
     private lateinit var binding: MainActivityBinding
     private lateinit var viewModel: MainViewModel
+    lateinit var plainText: EditText
+    lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,10 +40,10 @@ class MainActivity : AppCompatActivity(), MainFragment.MainFragmentInteractionLi
         if (savedInstanceState == null) {
             val mainFragment = MainFragment.newInstance()
             mainFragment.clickListener = this
-            val fragmentContainerViewId: Int = if (binding.mainFragmentContainer == null) {
+            val fragmentContainerViewId: Int = if (binding.xlMainFragmentContainer == null) {
                 R.id.container }
             else {
-                R.id.main_fragment_container
+                R.id.xl_main_fragment_container
             }
 
             supportFragmentManager.commit {
@@ -74,7 +80,7 @@ class MainActivity : AppCompatActivity(), MainFragment.MainFragmentInteractionLi
 
 
     private fun showListDetail(list: TaskList) {
-        if (binding.mainFragmentContainer == null) {
+        if (binding.xlMainFragmentContainer == null) {
             val listDetailIntent = Intent(this, ListDetailActivity::class.java)
             listDetailIntent.putExtra(INTENT_LIST_KEY, list)
             startActivityForResult(listDetailIntent, LIST_DETAIL_REQUEST_CODE)
@@ -82,7 +88,7 @@ class MainActivity : AppCompatActivity(), MainFragment.MainFragmentInteractionLi
             val bundle = bundleOf(INTENT_LIST_KEY to list)
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
-                replace(R.id.list_detail_fragment_container, ListDetailFragment::class.java, bundle, null)
+                replace(R.id.xl_list_detail_fragment_container, ListDetailFragment::class.java, bundle, null)
             }
             binding.taskListAddButton.setOnClickListener {
 
@@ -93,9 +99,11 @@ class MainActivity : AppCompatActivity(), MainFragment.MainFragmentInteractionLi
     companion object {
         const val INTENT_LIST_KEY = "list"
         const val LIST_DETAIL_REQUEST_CODE = 123
+        var LIST_NAME = "MyNotes"
     }
 
     override fun listItemTapped(list: TaskList) {
+        LIST_NAME = list.name
         showListDetail(list)
     }
 
@@ -108,19 +116,32 @@ class MainActivity : AppCompatActivity(), MainFragment.MainFragmentInteractionLi
         }
     }
 
+    fun LoadEditText() {
+        if (binding.xlListDetailFragmentContainer != null){
+
+            sharedPreferences = getSharedPreferences("", MODE_PRIVATE)
+            plainText = findViewById(R.id.plainText)
+            var loadnote = sharedPreferences.getString(LIST_NAME,"")
+            plainText.setText(loadnote)
+
+        }
+    }
+
     override fun onBackPressed() {
-        val listDetailFragment = supportFragmentManager.findFragmentById(R.id.list_detail_fragment_container)
-        if (listDetailFragment == null) {
-            super.onBackPressed()
-        } else {
+        if (binding.xlListDetailFragmentContainer!= null){
+            sharedPreferences = getSharedPreferences("", Context.MODE_PRIVATE)
+            plainText = findViewById(R.id.plainText)
+            val insertedText = plainText.text.toString()
+
+            sharedPreferences.edit().putString(viewModel.list.name,insertedText).apply()
+
+
             title = resources.getString(R.string.app_name)
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
-                remove(listDetailFragment)
-            }
-            binding.taskListAddButton.setOnClickListener {
-                showCreateListDialog()
+                remove(supportFragmentManager.findFragmentById(R.id.xl_list_detail_fragment_container)!!)
             }
         }
+        else{super.onBackPressed()}
     }
 }

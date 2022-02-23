@@ -30,6 +30,7 @@ class ListDetailFragment : Fragment() {
         return binding.root
     }
 
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(requireActivity(),
@@ -47,7 +48,17 @@ class ListDetailFragment : Fragment() {
             adapter.notifyDataSetChanged()
         }
 
+        try {
+            (activity as MainActivity?)?.LoadEditText()
+        }
+        catch (e: ClassCastException) { null }
+        finally {
+
+        }
+
+
 
     }
+
 
 }
